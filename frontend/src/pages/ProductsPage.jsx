@@ -27,6 +27,8 @@ export function sortProducts(products, sortOrder) {
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
+  const [catalogProducts, setCatalogProducts] = useState(null);
+  const [catalogError, setCatalogError] = useState('');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [sortOrder, setSortOrder] = useState('default');
@@ -34,21 +36,46 @@ export default function ProductsPage() {
   const [error, setError] = useState('');
   const { addToCart, cartMessage } = useCart();
 
+  // Keep category choices independent of narrowed or empty search results.
   useEffect(() => {
     let active = true;
     api.getProducts()
-      .then((data) => active && setProducts(data.products))
-      .catch((caught) => active && setError(caught.message))
-      .finally(() => active && setLoading(false));
+      .then((data) => active && setCatalogProducts(data.products))
+      .catch((caught) => active && setCatalogError(caught.message));
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError('');
+    api.getProducts(search)
+      .then((data) => {
+        if (active) {
+          setProducts(data.products);
+          // Also recover the category list after an initial connection failure.
+          if (!search.trim()) {
+            setCatalogProducts(data.products);
+            setCatalogError('');
+          }
+        }
+      })
+      .catch((caught) => {
+        if (active) {
+          setProducts([]);
+          setError(caught.message);
+        }
+      })
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, [search]);
+
   const categories = useMemo(
-    () => ['All', ...new Set(products.map((product) => product.category))],
-    [products]
+    () => ['All', ...new Set((catalogProducts ?? []).map((product) => product.category))],
+    [catalogProducts]
   );
 
-  const visibleProducts = sortProducts(filterProducts(products, search, category), sortOrder);
+  const visibleProducts = sortProducts(filterProducts(products, '', category), sortOrder);
 
   return (
     <section>
@@ -85,10 +112,13 @@ export default function ProductsPage() {
       <StatusMessage>{cartMessage}</StatusMessage>
       {loading && <StatusMessage>Loading products…</StatusMessage>}
       {error && <StatusMessage type="error">{error} Make sure the backend is running.</StatusMessage>}
+      {!loading && !error && catalogProducts === null && catalogError && (
+        <StatusMessage type="error">Categories could not be loaded. Clear the search or refresh the page to try again.</StatusMessage>
+      )}
       {!loading && !error && visibleProducts.length === 0 && <StatusMessage>No products match your filters.</StatusMessage>}
 
       <div className="product-grid">
-        {visibleProducts.map((product) => (
+        {!loading && !error && visibleProducts.map((product) => (
           <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
         ))}
       </div>
