@@ -4,10 +4,11 @@ import StatusMessage from '../components/StatusMessage.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { api } from '../services/api.js';
 import { calculateItemSubtotal } from '../utils/cart.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function CheckoutPage() {
-  const { cart, total, clearCart } = useCart();
-  const [form, setForm] = useState({ customerName: '', email: '', address: '' });
+  const { cart, total, clearCart, checkoutDraft: form, setCheckoutDraft: setForm } = useCart();
+  const auth = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [order, setOrder] = useState(null);
@@ -18,6 +19,7 @@ export default function CheckoutPage() {
 
   async function submitOrder(event) {
     event.preventDefault();
+    if (submitting) return;
     setError('');
     setSubmitting(true);
     try {
@@ -34,15 +36,20 @@ export default function CheckoutPage() {
     }
   }
 
-  if (order) return (
+  if (order && auth.user) return (
     <section className="success-card">
       <p className="eyebrow">ORDER RECEIVED</p>
       <h1>Thank you, {order.customerName}!</h1>
       <p>Your simulated order number is <strong>#{order.id}</strong>.</p>
       <p>Total: <strong>₱{Number(order.total).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</strong></p>
       <Link className="button" to="/">Continue shopping</Link>
+      <Link className="button secondary" to={`/orders/${order.id}`}>View order</Link>
     </section>
   );
+
+  if (auth.loading) return <StatusMessage>Checking your sign-in…</StatusMessage>;
+  if (auth.error) return <section><StatusMessage type="error">{auth.error}</StatusMessage><button onClick={auth.reload}>Try again</button></section>;
+  if (!auth.user) return <section className="account-prompt"><p className="eyebrow">SIMULATED CHECKOUT</p><h1>Sign in to checkout</h1><p>Your cart and delivery information will stay here while you sign in.</p><Link className="button" to="/login" state={{ from: '/checkout' }}>Sign in</Link></section>;
 
   if (cart.length === 0) return <section><div className="empty-state"><h1>Your cart is empty</h1><Link className="button" to="/">Browse products</Link></div></section>;
 
@@ -51,9 +58,9 @@ export default function CheckoutPage() {
       <form onSubmit={submitOrder}>
         <p className="eyebrow">SIMULATED CHECKOUT</p><h1>Delivery information</h1>
         <StatusMessage type="error">{error}</StatusMessage>
-        <label>Full name<input name="customerName" value={form.customerName} onChange={updateField} minLength="2" maxLength="80" required /></label>
-        <label>Email address<input name="email" type="email" value={form.email} onChange={updateField} required /></label>
-        <label>Delivery address<textarea name="address" value={form.address} onChange={updateField} minLength="10" maxLength="300" required /></label>
+        <div className="form-field"><label htmlFor="checkout-name">Full name</label><input id="checkout-name" name="customerName" autoComplete="name" value={form.customerName} onChange={updateField} minLength="2" maxLength="80" required /></div>
+        <div className="form-field"><label htmlFor="checkout-email">Email address</label><input id="checkout-email" name="email" type="email" autoComplete="email" value={form.email} onChange={updateField} required /></div>
+        <div className="form-field"><label htmlFor="checkout-address">Delivery address</label><textarea id="checkout-address" name="address" autoComplete="street-address" value={form.address} onChange={updateField} minLength="10" maxLength="300" required /></div>
         <button disabled={submitting}>{submitting ? 'Submitting order…' : 'Place simulated order'}</button>
       </form>
       <aside className="summary">

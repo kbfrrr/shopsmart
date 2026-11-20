@@ -60,6 +60,7 @@ services:
     environment:
       <<: *database-environment
       NODE_ENV: production
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in deployment/aws/.env}
       FRONTEND_URL: ${FRONTEND_URL:?Set FRONTEND_URL in deployment/aws/.env}
       TRUST_PROXY: "1"
       NODE_OPTIONS: --max-old-space-size=256

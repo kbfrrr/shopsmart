@@ -6,6 +6,7 @@ const CartContext = createContext(null);
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [cartMessage, setCartMessage] = useState('');
+  const [checkoutDraft, setCheckoutDraft] = useState({ customerName: '', email: '', address: '' });
 
   function addToCart(product) {
     setCart((currentCart) => {
@@ -31,10 +32,13 @@ export function CartProvider({ children }) {
   function clearCart() {
     setCart([]);
     setCartMessage('');
+    setCheckoutDraft({ customerName: '', email: '', address: '' });
   }
 
   const value = useMemo(() => ({
     cart,
+    checkoutDraft,
+    setCheckoutDraft,
     cartMessage,
     itemCount: calculateCartItemCount(cart),
     total: calculateCartTotal(cart),
@@ -42,7 +46,7 @@ export function CartProvider({ children }) {
     setQuantity,
     removeFromCart,
     clearCart
-  }), [cart, cartMessage]);
+  }), [cart, cartMessage, checkoutDraft]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

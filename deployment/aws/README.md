@@ -13,9 +13,10 @@ flowchart LR
 ```
 
 These are deployment preparation files, not evidence of a completed AWS release.
-Customer sign-in and order ownership are still missing from the app. Use fictional
-data and restrict the staging audience while those requirements are unfinished;
-do not describe this release as satisfying the complete learning guide.
+Customer sign-in and order ownership are implemented in the customer-auth branch.
+Follow [the authentication upgrade guide](AUTHENTICATION.md) before updating the
+currently deployed starter; hosted authentication retests are still required.
+Use fictional data and keep staging access restricted until release checks pass.
 
 Existing dependency findings also need review before public release. On November
 20, 2026, `npm audit --workspace backend --omit=dev` reported 10 findings: one
@@ -92,6 +93,8 @@ Keep the generated password private. Edit `deployment/aws/.env` on the server:
 
 - Set `POSTGRES_PASSWORD` to the generated 48 hexadecimal characters. Hex avoids
   URL-escaping issues in the internal connection string.
+- Set `SESSION_SECRET` to a separate private random value of at least 32 characters
+  (generate with `openssl rand -hex 32`). Preserve it across deployments.
 - Set `SITE_ADDRESS` to the hostname only, such as
   `shopsmart.203.0.113.10.sslip.io`, replacing the example IP with your actual IP.
 - Set `FRONTEND_URL` to the corresponding origin, including `https://` and no
@@ -149,13 +152,15 @@ Use the actual HTTPS hostname in a fresh browser:
 3. Confirm `/api/products` contains the catalog. An unknown `/api/...` route must
    return an API 404, not frontend HTML.
 4. Test search, stock limits, the 20-unit cart limit, totals, and a fictional simulated
-   checkout. Confirm an invalid order is rejected and no real payment is collected.
+   checkout after signing in. Confirm guests cannot check out, invalid orders are
+   rejected, and no real payment is collected. Provision the two demo customers
+   using the authentication guide before sharing customer access.
 5. Test assistant matches, no matches, and the visible catalog-mode label. A live
    provider call is not verified by catalog-mode success.
 6. Restart the API, then reboot the ShopSmart host in a separate check. Verify
    recovery, HTTPS, the saved order, and the reduced stock. Do not reboot SAM10.
 7. Record the URL, commit, image identifiers, test time, statuses, credit balance,
-   and redacted evidence. Record the remaining authentication requirement explicitly.
+   and redacted evidence. Include the customer ownership and session retests.
 
 For service failures, inspect only the required logs:
 

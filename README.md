@@ -136,6 +136,7 @@ DATABASE_URL="postgresql://shopsmart_user:CHANGE_ME_LOCAL_PASSWORD@localhost:543
 PORT=3000
 FRONTEND_URL=http://localhost:5173
 NODE_ENV=development
+SESSION_SECRET=CHANGE_ME_TO_A_RANDOM_VALUE_OF_AT_LEAST_32_CHARACTERS
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-3.1-flash-lite
 ```
@@ -176,7 +177,7 @@ Make sure the PostgreSQL service is running. Then run:
 npm exec --workspace backend -- prisma migrate deploy
 ```
 
-Prisma will connect using `backend/.env` and create the Product, Order and OrderItem tables. The migration command should report that the database is in sync.
+Prisma connects using `backend/.env` and applies the committed product, order, customer, and session migrations. Existing orders are preserved without assigning an account owner.
 
 ### 7. Insert sample products
 
@@ -238,13 +239,14 @@ Keep this terminal open. It runs both applications:
 4. Clear the search.
 5. Add a product to the cart.
 6. Open the cart and change the quantity.
-7. Select **Proceed to checkout**.
-8. Enter a name, valid email address and address of at least ten characters.
-9. Select **Place simulated order**.
-10. Confirm that an order number appears.
-11. Open **AI Assistant**.
-12. Ask `Which keyboard is below ₱2,000?`.
-13. Confirm that the response recommends a matching product.
+7. Provision two fictional accounts once with `npm run demo:accounts --workspace backend` in a private interactive terminal. Choose separate passwords; existing accounts are never reset. Configure a private random `SESSION_SECRET` before starting the API so sessions survive restarts.
+8. Select **Proceed to checkout**, then **Sign in** using one of the provisioned accounts. Your cart is preserved while navigating to sign-in.
+9. Enter a name, valid email address and address of at least ten characters.
+10. Select **Place simulated order**.
+11. Confirm that an order number appears and open **My orders** to view it.
+12. Open **AI Assistant**.
+13. Ask `Which keyboard is below ₱2,000?`.
+14. Confirm that the response recommends a matching product.
 
 ### 12. Stop the application
 
