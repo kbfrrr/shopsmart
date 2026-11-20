@@ -69,7 +69,7 @@ After migration succeeds, provision the customers in a private interactive termi
 sudo docker compose --env-file deployment/aws/.env -f deployment/aws/compose.yaml run --rm --no-deps api npm run demo:accounts --workspace backend
 ```
 
-The command creates `customer-a@example.test` and `customer-b@example.test`, asking
+The command creates `customer.test1@example.com` and `customer.test2@example.com`, asking
 for each password twice with input hidden. Use separate passwords of 12–128
 characters. It skips existing accounts without changing their passwords. Running
 it again is safe if an earlier run created only the first account. Do not use `-T`,

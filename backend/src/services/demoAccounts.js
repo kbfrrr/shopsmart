@@ -1,8 +1,8 @@
 import { hashPassword } from './passwords.js';
 
 export const demoCustomers = [
-  { name: 'Demo Customer A', email: 'customer-a@example.test' },
-  { name: 'Demo Customer B', email: 'customer-b@example.test' }
+  { name: 'Demo Customer A', email: 'customer.test1@example.com' },
+  { name: 'Demo Customer B', email: 'customer.test2@example.com' }
 ];
 
 export async function provisionCustomer(database, customer, password) {
