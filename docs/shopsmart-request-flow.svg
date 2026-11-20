@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="950" viewBox="0 0 1500 950">
+<defs>
+ <marker id="red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#ab4936"/></marker>
+ <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#286ba0"/></marker>
+ <style>text{font-family:Arial,sans-serif;fill:#20374c}.title{font-size:32px;font-weight:700}.head{font-size:21px;font-weight:700}.label{font-size:18px;font-weight:700}.body{font-size:16px;fill:#577086}.small{font-size:14px;fill:#577086}.box{fill:#fffdf8;stroke:#ddb36b;stroke-width:1.3}.req{fill:none;stroke:#ab4936;stroke-width:2;marker-end:url(#red)}.res{fill:none;stroke:#286ba0;stroke-width:2;marker-end:url(#blue)}</style>
+</defs>
+<rect width="1500" height="950" rx="16" fill="white"/>
+<text x="38" y="52" class="title">ShopSmart request flow</text>
+<text x="38" y="82" class="body">HTTPS request, server validation and database response · Deployment · main / 6174e37</text>
+<text x="38" y="150" class="small" font-weight="700">OUTSIDE AWS</text>
+<rect x="345" y="115" width="1115" height="410" rx="18" fill="#fffaf0" stroke="#d3a353" stroke-width="1.5"/>
+<text x="368" y="151" class="head">AWS / Asia Pacific (Singapore)</text>
+<text x="368" y="180" class="body">ShopSmart EC2 · Docker Compose · private API and database connections</text>
+
+<rect x="38" y="240" width="235" height="145" rx="14" fill="#f5f7fa" stroke="#9aafc2" stroke-dasharray="7 4"/>
+<text x="56" y="275" class="label">Browser / React UI</text>
+<text x="56" y="306" class="body">User selects an action</text>
+<text x="56" y="333" class="body">Sends /api/* requests</text>
+<text x="56" y="360" class="body">Displays returned data</text>
+
+<rect x="368" y="240" width="255" height="145" rx="13" class="box"/>
+<text x="386" y="275" class="label">Caddy reverse proxy</text>
+<text x="386" y="306" class="body">Terminates HTTPS :443</text>
+<text x="386" y="333" class="body">Serves the React build</text>
+<text x="386" y="360" class="body">Forwards /api/* to API</text>
+
+<rect x="746" y="240" width="290" height="145" rx="13" class="box"/>
+<text x="764" y="275" class="label">Express API</text>
+<text x="764" y="306" class="body">Checks request and identity</text>
+<text x="764" y="333" class="body">Enforces order ownership</text>
+<text x="764" y="360" class="body">Internal port 3000</text>
+
+<rect x="1159" y="240" width="277" height="145" rx="13" fill="#edf5ff" stroke="#96b9da" stroke-width="1.3"/>
+<text x="1177" y="275" class="label">PostgreSQL 16</text>
+<text x="1177" y="306" class="body">Reads or writes records</text>
+<text x="1177" y="333" class="body">Stores users and sessions</text>
+<text x="1177" y="360" class="body">Internal port 5432</text>
+
+<path d="M273 281H368" class="req"/><text x="304" y="268" class="small">1</text>
+<path d="M623 281H746" class="req"/><text x="674" y="268" class="small">2</text>
+<path d="M1036 281H1159" class="req"/><text x="1087" y="268" class="small">3</text>
+<path d="M1159 352H1036" class="res"/><text x="1087" y="340" class="small">4</text>
+<path d="M746 352H623" class="res"/><text x="674" y="340" class="small">5</text>
+<path d="M368 352H273" class="res"/><text x="304" y="340" class="small">6</text>
+
+<rect x="368" y="419" width="1068" height="80" rx="12" fill="#edf7f0" stroke="#a4cbb5"/>
+<text x="386" y="449" class="label">Example: signed-in customer opens My Orders</text>
+<text x="386" y="477" class="body">GET /api/orders → validate session → query orders for that user → return JSON → display the customer’s orders</text>
+
+<text x="38" y="573" class="head">Follow one request</text>
+<rect x="38" y="596" width="692" height="213" rx="14" fill="#fafbfc" stroke="#d7dee4"/>
+<text x="60" y="633" class="label">1–3 / Request and database access</text>
+<text x="60" y="668" class="body">1. React sends an HTTPS request to the hosted /api address.</text>
+<text x="60" y="701" class="body">2. Caddy forwards the API request over the Docker network.</text>
+<text x="60" y="734" class="body">3. Express validates input and queries PostgreSQL through Prisma.</text>
+<text x="60" y="779" class="small">Private order routes require a session; writes also require CSRF validation.</text>
+<rect x="754" y="596" width="706" height="213" rx="14" fill="#fafbfc" stroke="#d7dee4"/>
+<text x="776" y="633" class="label">4–6 / Response and screen update</text>
+<text x="776" y="668" class="body">4. PostgreSQL returns the query result to Express.</text>
+<text x="776" y="701" class="body">5. Express returns authorized data, or a clear error, through Caddy.</text>
+<text x="776" y="734" class="body">6. React displays the result; the browser never connects to PostgreSQL.</text>
+<text x="776" y="779" class="small">The catalog assistant uses selected public product facts; no live AI call verified.</text>
+
+<path d="M40 858H90" class="req"/><text x="105" y="864" class="body" font-weight="700">Request / query</text>
+<path d="M390 858H440" class="res"/><text x="455" y="864" class="body" font-weight="700">Response / result</text>
+<text x="38" y="913" class="small">Hosted URL: https://shopsmart.13.251.6.115.sslip.io · Products are public; order access is enforced by the API.</text>
+</svg>

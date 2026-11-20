@@ -1,0 +1,128 @@
+{
+  "checkedAt": "2026-11-20T14:34:05.468Z",
+  "base": "https://shopsmart.13.251.6.115.sslip.io",
+  "credentialsUsed": false,
+  "checks": [
+    {
+      "path": "/api/health",
+      "method": "GET",
+      "expectedStatus": 200,
+      "status": 200,
+      "passed": true,
+      "result": {
+        "status": "ok"
+      }
+    },
+    {
+      "path": "/api/ready",
+      "method": "GET",
+      "expectedStatus": 200,
+      "status": 200,
+      "passed": true,
+      "result": {
+        "status": "ok"
+      }
+    },
+    {
+      "path": "/api/products",
+      "method": "GET",
+      "expectedStatus": 200,
+      "status": 200,
+      "passed": true,
+      "result": {
+        "productCount": 6
+      }
+    },
+    {
+      "path": "/api/orders",
+      "method": "GET",
+      "expectedStatus": 401,
+      "status": 401,
+      "passed": true,
+      "result": {
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "Please sign in to continue."
+        }
+      }
+    },
+    {
+      "path": "/api/orders/6",
+      "method": "GET",
+      "expectedStatus": 401,
+      "status": 401,
+      "passed": true,
+      "result": {
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "Please sign in to continue."
+        }
+      }
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "expectedStatus": 403,
+      "status": 403,
+      "passed": true,
+      "result": {
+        "error": {
+          "code": "INVALID_CSRF",
+          "message": "Your session changed. Refresh the page and try again."
+        }
+      }
+    },
+    {
+      "path": "/api/assistant/questions",
+      "method": "POST",
+      "expectedStatus": 422,
+      "status": 422,
+      "passed": true,
+      "result": {
+        "error": {
+          "code": "INVALID_QUESTION",
+          "message": "Question must contain between 3 and 300 characters."
+        }
+      }
+    },
+    {
+      "path": "/api/assistant/questions",
+      "method": "POST",
+      "expectedStatus": 200,
+      "status": 200,
+      "passed": true,
+      "result": {
+        "answer": "I found these matches in the ShopSmart catalog: Compact Mechanical Keyboard (₱1,850, in stock).",
+        "recommendedProducts": [
+          {
+            "id": 2,
+            "name": "Compact Mechanical Keyboard",
+            "price": 1850,
+            "category": "Accessories"
+          }
+        ],
+        "sources": [
+          {
+            "type": "product",
+            "id": 2,
+            "name": "Compact Mechanical Keyboard"
+          }
+        ],
+        "mode": "catalog"
+      }
+    },
+    {
+      "path": "/api/assistant/questions",
+      "method": "POST",
+      "expectedStatus": 200,
+      "status": 200,
+      "passed": true,
+      "result": {
+        "answer": "I could not find an in-stock product matching that request.",
+        "recommendedProducts": [],
+        "sources": [],
+        "mode": "no_match"
+      }
+    }
+  ]
+}

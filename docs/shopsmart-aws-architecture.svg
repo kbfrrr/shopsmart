@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1040" viewBox="0 0 1500 1040">
+ <defs>
+  <marker id="red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#ab4936"/></marker>
+  <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#286ba0"/></marker>
+  <marker id="green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#42826b"/></marker>
+  <style>
+   text{font-family:Arial,sans-serif;fill:#20374c} .title{font-size:32px;font-weight:700}.heading{font-size:21px;font-weight:700}.label{font-size:18px;font-weight:700}.body{font-size:15px;fill:#577086}.small{font-size:13px;fill:#577086}.box{fill:#fffdf8;stroke:#ddb36b;stroke-width:1.3}.service{fill:#edf5ff;stroke:#96b9da;stroke-width:1.3}.outside{fill:#f5f7fa;stroke:#9aafc2;stroke-width:1.3;stroke-dasharray:7 4}.request{fill:none;stroke:#ab4936;stroke-width:2;marker-end:url(#red)}.access{fill:none;stroke:#286ba0;stroke-width:2;marker-end:url(#blue)}.release{fill:none;stroke:#42826b;stroke-width:2;stroke-dasharray:7 4;marker-end:url(#green)}
+  </style>
+ </defs>
+ <rect width="1500" height="1040" rx="16" fill="white"/>
+ <text x="38" y="52" class="title">ShopSmart</text>
+ <text x="38" y="82" class="body">AWS infrastructure design · Deployment · main / 6174e37</text>
+ <rect x="275" y="115" width="1185" height="810" rx="18" fill="#fffaf0" stroke="#d3a353" stroke-width="1.5"/>
+ <text x="300" y="150" class="heading">AWS / Asia Pacific (Singapore)</text>
+ <text x="1332" y="149" class="small">ap-southeast-1</text>
+ <text x="38" y="151" class="small" font-weight="700">OUTSIDE AWS</text>
+
+ <rect x="300" y="180" width="680" height="570" rx="16" fill="#fcf8ee" stroke="#dfbe82" stroke-width="1.3"/>
+ <text x="322" y="214" class="heading">EC2 / shopsmart-server</text>
+ <text x="322" y="241" class="body">Ubuntu 24.04 LTS · t3.small · ap-southeast-1c</text>
+ <text x="322" y="265" class="body">20 GiB encrypted gp3 root disk · Docker Compose</text>
+
+ <rect x="38" y="308" width="202" height="105" rx="14" class="outside"/>
+ <text x="54" y="340" class="label">Customer browser</text>
+ <text x="54" y="367" class="body">Products, cart, sign-in</text>
+ <text x="54" y="390" class="body">and private orders</text>
+
+ <rect x="322" y="299" width="345" height="122" rx="13" class="box"/>
+ <text x="340" y="331" class="label">Caddy + React frontend</text>
+ <text x="340" y="357" class="body">HTTPS 443 · HTTP 80 → HTTPS</text>
+ <text x="340" y="381" class="body">Vite static build · SPA route fallback</text>
+ <text x="340" y="405" class="body">/api/* forwarded to Express</text>
+
+ <rect x="322" y="477" width="345" height="128" rx="13" class="box"/>
+ <text x="340" y="508" class="label">Express API</text>
+ <text x="340" y="535" class="body">Internal port 3000 · session identity</text>
+ <text x="340" y="559" class="body">Order ownership and stock validation</text>
+ <text x="340" y="583" class="body">Catalog-based product assistant</text>
+
+ <rect x="721" y="477" width="235" height="128" rx="13" class="box"/>
+ <text x="739" y="508" class="label">PostgreSQL 16</text>
+ <text x="739" y="535" class="body">Internal port 5432</text>
+ <text x="739" y="559" class="body">Products, users, orders</text>
+ <text x="739" y="583" class="body">and sessions</text>
+
+ <rect x="322" y="647" width="634" height="78" rx="13" fill="#edf7f0" stroke="#a4cbb5" stroke-width="1.3"/>
+ <text x="340" y="677" class="label">Release migration / one-shot container</text>
+ <text x="340" y="703" class="body">Prisma migrate deploy · existing catalog initialization skipped</text>
+
+ <rect x="1050" y="299" width="385" height="122" rx="13" class="service"/>
+ <text x="1068" y="331" class="label">Persistent Docker volumes</text>
+ <text x="1068" y="357" class="body">Caddy certificate and configuration data</text>
+ <text x="1068" y="381" class="body">PostgreSQL data on the EC2 disk</text>
+ <text x="1068" y="405" class="body">Volumes retained across container recreation</text>
+
+ <rect x="1050" y="477" width="385" height="128" rx="13" class="service"/>
+ <text x="1068" y="508" class="label">AWS IAM</text>
+ <text x="1068" y="535" class="body">ShopSmartEC2Role instance profile</text>
+ <text x="1068" y="559" class="body">AmazonSSMManagedInstanceCore</text>
+ <text x="1068" y="583" class="body">Allows managed administration</text>
+
+ <rect x="38" y="795" width="202" height="90" rx="14" class="outside"/>
+ <text x="54" y="827" class="label">Student operator</text>
+ <text x="54" y="854" class="body">AWS console access</text>
+ <rect x="322" y="795" width="634" height="90" rx="13" class="service"/>
+ <text x="340" y="827" class="label">AWS Systems Manager</text>
+ <text x="340" y="854" class="body">Session Manager provides access to the EC2 shell</text>
+
+ <rect x="1050" y="660" width="385" height="225" rx="13" fill="#f6f7f9" stroke="#c5cdd5"/>
+ <text x="1068" y="691" class="label">Deployment boundaries</text>
+ <text x="1068" y="722" class="body">Only Caddy publishes web ports.</text>
+ <text x="1068" y="748" class="body">API and database stay on Docker networks.</text>
+ <text x="1068" y="774" class="body">Secrets stay in the private server .env.</text>
+ <text x="1068" y="800" class="body">No external AI call verified in this release.</text>
+ <text x="1068" y="836" class="body">SAM10 runs on a separate EC2 instance;</text>
+ <text x="1068" y="860" class="body">both sites share account credits and costs.</text>
+
+ <path d="M240 360H322" class="request" marker-start="url(#red)"/>
+ <path d="M494 421V477" class="request" marker-start="url(#red)"/>
+ <path d="M667 541H721" class="access" marker-start="url(#blue)"/>
+ <path d="M667 321H1050" class="access"/>
+ <path d="M956 505H1007V388H1050" class="access"/>
+ <path d="M838 647V605" class="release"/>
+ <path d="M240 840H322" class="access"/>
+ <path d="M639 795V750" class="access"/>
+ <path d="M1050 558H1007V840H956" class="access" stroke-dasharray="7 4"/>
+
+ <path d="M40 966H83" class="request" marker-start="url(#red)"/>
+ <text x="95" y="971" class="body" font-weight="700">Web request and response</text>
+ <path d="M420 966H463" class="access"/>
+ <text x="475" y="971" class="body" font-weight="700">Data, persistence or administration</text>
+ <path d="M900 966H943" class="release"/>
+ <text x="955" y="971" class="body" font-weight="700">Release migration</text>
+ <text x="38" y="1014" class="small">Hosted URL: https://shopsmart.13.251.6.115.sslip.io · HTTPS staging access restricted to the tester IP</text>
+</svg>
