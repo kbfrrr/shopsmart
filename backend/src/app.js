@@ -6,10 +6,13 @@ import morgan from 'morgan';
 import productsRouter from './routes/products.js';
 import ordersRouter from './routes/orders.js';
 import assistantRouter from './routes/assistant.js';
+import { prisma } from './lib/prisma.js';
 
-export function createApp() {
+export function createApp({ checkDatabase = () => prisma.$queryRaw`SELECT 1` } = {}) {
   const app = express();
   app.disable('x-powered-by');
+  // Enable only behind the deployment's single proxy; the API has no public port.
+  if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
   app.use(helmet());
   app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
   app.use(express.json({ limit: '100kb' }));
@@ -17,6 +20,15 @@ export function createApp() {
   app.use(morgan(':method :url :status :response-time ms'));
 
   app.get('/api/health', (_request, response) => response.json({ status: 'ok' }));
+  app.get('/api/ready', async (_request, response) => {
+    response.setHeader('Cache-Control', 'no-store');
+    try {
+      await checkDatabase();
+      response.json({ status: 'ok' });
+    } catch {
+      response.status(503).json({ status: 'unavailable' });
+    }
+  });
   app.use('/api/products', productsRouter);
   app.use('/api/orders', ordersRouter);
   app.use('/api/assistant', assistantRouter);
