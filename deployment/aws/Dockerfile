@@ -4,16 +4,18 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends openssl \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY package.json package-lock.json ./
-COPY backend/package.json backend/package.json
-COPY frontend/package.json frontend/package.json
+# Git checkouts may use restrictive permissions (for example umask 077).
+# The runtime user must own copied sources even when files are mode 0600.
+COPY --chown=node:node package.json package-lock.json ./
+COPY --chown=node:node backend/package.json backend/package.json
+COPY --chown=node:node frontend/package.json frontend/package.json
 
 FROM node-base AS api
 # Keep the locked Prisma CLI available for the one-shot migration service.
 RUN npm ci --workspace backend --include-workspace-root --include=dev
-COPY backend/prisma backend/prisma
+COPY --chown=node:node backend/prisma backend/prisma
 RUN npm run db:generate --workspace backend
-COPY backend/src backend/src
+COPY --chown=node:node backend/src backend/src
 ENV NODE_ENV=production \
     PORT=3000 \
     CHECKPOINT_DISABLE=1
