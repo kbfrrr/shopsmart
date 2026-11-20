@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import StatusMessage from '../components/StatusMessage.jsx';
 import { useCart } from '../context/CartContext.jsx';
+import { getCartQuantityLimit } from '../utils/cart.js';
 
 export default function CartPage() {
   const { cart, itemCount, total, cartMessage, setQuantity, removeFromCart } = useCart();
@@ -24,10 +25,10 @@ export default function CartPage() {
                       disabled={item.quantity <= 1}
                       onClick={() => setQuantity(item.productId, item.quantity - 1)}>−</button>
                     <input id={`quantity-${item.productId}`} aria-label={`Quantity for ${item.name}`}
-                      type="number" min="1" max={item.stock} value={item.quantity}
+                      type="number" min="1" max={getCartQuantityLimit(item.stock)} value={item.quantity}
                       onChange={(event) => setQuantity(item.productId, Number(event.target.value))} />
                     <button type="button" aria-label={`Increase quantity of ${item.name}`}
-                      disabled={item.quantity >= item.stock}
+                      disabled={item.quantity >= getCartQuantityLimit(item.stock)}
                       onClick={() => setQuantity(item.productId, item.quantity + 1)}>+</button>
                   </div>
                 </div>

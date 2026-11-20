@@ -1,3 +1,17 @@
+// Match the per-product quantity limit in the API order validator.
+const MAX_QUANTITY_PER_PRODUCT = 20;
+
+export function getCartQuantityLimit(stock) {
+  return Math.min(stock, MAX_QUANTITY_PER_PRODUCT);
+}
+
+function quantityLimitMessage({ stock, name }) {
+  if (stock <= MAX_QUANTITY_PER_PRODUCT) {
+    return `Only ${stock} unit(s) of ${name} are available.`;
+  }
+  return `Only ${MAX_QUANTITY_PER_PRODUCT} units per product are allowed in one order.`;
+}
+
 export function findCartItem(cart, productId) {
   return cart.find((item) => item.productId === productId);
 }
@@ -18,8 +32,8 @@ export function addProductToCart(cart, product) {
   const existingItem = findCartItem(cart, product.id);
   const currentQuantity = existingItem?.quantity ?? 0;
 
-  if (currentQuantity >= product.stock) {
-    return { cart, error: `Only ${product.stock} unit(s) of ${product.name} are available.` };
+  if (currentQuantity >= getCartQuantityLimit(product.stock)) {
+    return { cart, error: quantityLimitMessage(product) };
   }
 
   if (existingItem) {
@@ -49,8 +63,8 @@ export function updateCartQuantity(cart, productId, quantity) {
   if (!Number.isInteger(quantity) || quantity < 1) {
     return { cart, error: 'Quantity must be a whole number greater than zero.' };
   }
-  if (quantity > item.stock) {
-    return { cart, error: `Only ${item.stock} unit(s) are available.` };
+  if (quantity > getCartQuantityLimit(item.stock)) {
+    return { cart, error: quantityLimitMessage(item) };
   }
   return {
     cart: cart.map((current) => current.productId === productId ? { ...current, quantity } : current),

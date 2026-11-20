@@ -1,6 +1,6 @@
 # ShopSmart Starter Application
 
-ShopSmart is a working educational e-commerce starter for a six-week BSIT full-stack AI application development sequence. It contains a React front end, Express REST API, PostgreSQL database through Prisma, shopping cart, simulated checkout and rule-based product assistant.
+ShopSmart is a working educational e-commerce starter for a six-week BSIT full-stack AI application development sequence. It contains a React front end, Express REST API, PostgreSQL database through Prisma, shopping cart, simulated checkout and catalog assistant with optional Gemini integration.
 
 The application intentionally leaves several improvements for later lessons. It is for classroom use and must not process real payments or personal customer data.
 
@@ -82,7 +82,7 @@ git --version
 
 ```sql
 CREATE USER shopsmart_user WITH PASSWORD 'CHANGE_ME_LOCAL_PASSWORD';
-CREATE DATABASE shopsmart OWNER shopsmart_user;
+CREATE DATABASE shopsmart_release OWNER shopsmart_user;
 ```
 
 Replace `CHANGE_ME_LOCAL_PASSWORD` with a password used only for your local ShopSmart database. Use the same value in `backend/.env`; never commit that file.
@@ -103,10 +103,10 @@ If PostgreSQL reports that the user or database already exists, do not create an
 
 ### 1. Extract the project
 
-1. Download `ShopSmart-Starter.zip`.
+1. Download the ShopSmart release ZIP or open the provided repository checkout.
 2. Right-click the ZIP file and select **Extract All**.
 3. Choose a location that you can write to, such as `Documents\BSIT`.
-4. Open the extracted `ShopSmart-Starter` folder.
+4. Open the extracted project folder.
 5. Confirm that `package.json`, `frontend`, `backend`, `docs`, and this `README.md` are visible.
 
 Do not run the project while it remains inside the ZIP archive.
@@ -115,30 +115,34 @@ Do not run the project while it remains inside the ZIP archive.
 
 1. Open Visual Studio Code.
 2. Select **File > Open Folder**.
-3. Select the extracted `ShopSmart-Starter` folder, not only `frontend` or `backend`.
+3. Select the project root containing both `frontend` and `backend`.
 4. If Visual Studio Code asks whether you trust the authors, select **Yes, I trust the authors** only for the instructor-provided copy.
 5. Select **Terminal > New Terminal**.
-6. Confirm that the terminal path ends in `ShopSmart-Starter`.
+6. Confirm that the terminal is at the project root.
 
 ### 3. Create the environment files
 
 Run these commands in PowerShell from the project root:
 
 ```powershell
-Copy-Item backend\.env.example backend\.env
-Copy-Item frontend\.env.example frontend\.env
+if (-not (Test-Path backend\.env)) { Copy-Item backend\.env.example backend\.env }
+if (-not (Test-Path frontend\.env)) { Copy-Item frontend\.env.example frontend\.env }
 ```
 
 Open `backend/.env`. It should contain:
 
 ```env
-DATABASE_URL="postgresql://shopsmart_user:CHANGE_ME_LOCAL_PASSWORD@localhost:5432/shopsmart?schema=public"
+DATABASE_URL="postgresql://shopsmart_user:CHANGE_ME_LOCAL_PASSWORD@localhost:5432/shopsmart_release?schema=public"
 PORT=3000
 FRONTEND_URL=http://localhost:5173
 NODE_ENV=development
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.1-flash-lite
 ```
 
-If the class uses a different database password or port, update only the matching part of `DATABASE_URL`.
+Set `DATABASE_URL` to your local test database and URL-encode any reserved characters in the password. If your PostgreSQL server uses a different port, update it here. Set `VITE_API_URL=http://localhost:3000/api` in `frontend/.env`.
+
+The assistant works with the local catalog when `GEMINI_API_KEY` is blank. If your class supplies an approved key, set it in `backend/.env` and restart the API. Use the approved model ID in `GEMINI_MODEL` if it differs from the example. Only the public API URL belongs in the frontend configuration.
 
 Never upload `.env` files or paste their contents into a public repository or AI service.
 
@@ -147,18 +151,12 @@ Never upload `.env` files or paste their contents into a public repository or AI
 From the project root, run:
 
 ```powershell
-npm install
+npm ci
 ```
 
 Wait until the command finishes. Do not close the terminal. A `node_modules` folder and `package-lock.json` should appear.
 
-If PowerShell blocks `npm.ps1`, open PowerShell as the current user and run:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
-Confirm the change, close PowerShell, reopen Visual Studio Code and run `npm install` again.
+If PowerShell blocks `npm.ps1`, use `npm.cmd` in place of `npm` for the commands in this guide.
 
 ### 5. Generate the Prisma database client
 
@@ -175,7 +173,7 @@ The command must finish without an error.
 Make sure the PostgreSQL service is running. Then run:
 
 ```powershell
-npm run db:migrate
+npm exec --workspace backend -- prisma migrate deploy
 ```
 
 Prisma will connect using `backend/.env` and create the Product, Order and OrderItem tables. The migration command should report that the database is in sync.
@@ -194,7 +192,7 @@ The terminal should display:
 Seeded 6 ShopSmart products.
 ```
 
-Running this command again deletes existing classroom orders and restores the six sample products. Do not reseed a database containing work you need to keep.
+Run the seed only after verifying the configured target is your new, empty classroom database. The seed deletes existing orders and products before inserting the six samples.
 
 ### 8. Run the automated checks
 
@@ -266,7 +264,7 @@ Then run:
 
 ```sql
 CREATE USER shopsmart_user WITH PASSWORD 'CHANGE_ME_LOCAL_PASSWORD';
-CREATE DATABASE shopsmart OWNER shopsmart_user;
+CREATE DATABASE shopsmart_release OWNER shopsmart_user;
 \q
 ```
 
@@ -275,8 +273,8 @@ Replace `CHANGE_ME_LOCAL_PASSWORD` with a password used only for your local Shop
 Create environment files with:
 
 ```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+test -f backend/.env || cp backend/.env.example backend/.env
+test -f frontend/.env || cp frontend/.env.example frontend/.env
 ```
 
 All remaining npm commands are the same as the Windows instructions.
@@ -284,7 +282,7 @@ All remaining npm commands are the same as the Windows instructions.
 ## Daily startup after the first installation
 
 1. Start PostgreSQL.
-2. Open the `ShopSmart-Starter` folder in Visual Studio Code.
+2. Open the ShopSmart project folder in Visual Studio Code.
 3. Open a terminal in the project root.
 4. Run `npm run dev`.
 5. Open http://localhost:5173.
@@ -308,7 +306,7 @@ Stop the previous ShopSmart process with `Ctrl+C`. Do not change ports unless th
 
 ### Products do not appear
 
-Verify http://localhost:3000/api/health, then run `npm run db:seed` and restart `npm run dev`.
+Check `/api/health` and `/api/products` on port 3000. If health works but products fails, confirm the database name and credentials in `backend/.env` and check migrations with `npm exec --workspace backend -- prisma migrate status`. If products returns an empty list, verify the configured database and inspect its data with `npm run db:studio`. Preserve any existing data.
 
 ### The browser reports a CORS error
 
@@ -318,12 +316,15 @@ Confirm that the front end uses http://localhost:5173 and that `FRONTEND_URL=htt
 
 | Command | Purpose |
 | --- | --- |
-| `npm install` | Install all dependencies |
+| `npm ci` | Install dependencies from the lockfile |
 | `npm run dev` | Run front end and API |
 | `npm run check` | Lint, test and build |
 | `npm run db:generate` | Generate Prisma Client |
-| `npm run db:migrate` | Create or update database tables |
+| `npm exec --workspace backend -- prisma migrate deploy` | Apply committed migrations |
+| `npm run db:migrate` | Create and apply migrations during development |
 | `npm run db:seed` | Reset and insert sample data |
 | `npm run db:studio` | Open the Prisma database viewer |
 
 Read `docs/TEACHING_ROADMAP.md` for the weekly improvement plan.
+
+See the [release note](docs/RELEASE_NOTE.md), [test record](docs/RELEASE_TEST_RECORD.md), and [deployment plan](docs/DEPLOYMENT_PLAN.md) for the local release.

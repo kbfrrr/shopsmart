@@ -16,7 +16,11 @@ export default function AssistantPage() {
     setResult(null);
     setLoading(true);
     try { setResult(await api.askAssistant(question)); }
-    catch (caught) { setError(caught.message); }
+    catch (caught) {
+      setError(caught instanceof TypeError
+        ? 'Could not reach ShopSmart. Try again in a moment.'
+        : caught.message);
+    }
     finally { setLoading(false); }
   }
 
